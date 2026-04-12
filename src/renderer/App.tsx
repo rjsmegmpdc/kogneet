@@ -4,6 +4,7 @@ import { useUIStore } from './stores/ui-store'
 import { Sidebar } from './components/layout/Sidebar'
 import { AppHeader } from './components/layout/AppHeader'
 import { FirstLaunchWizard } from './components/wizard/FirstLaunchWizard'
+import { SettingsPanel } from './components/settings/SettingsPanel'
 
 export function App(): JSX.Element {
   const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | null>(null)
@@ -54,7 +55,7 @@ export function App(): JSX.Element {
           {activeView === 'social' && <PlaceholderView name="Social Publishing" description="AI-powered social post generation with approval queue and analytics." />}
           {activeView === 'subscribers' && <PlaceholderView name="Subscribers" description="Manage email subscribers with per-feed personalisation." />}
           {activeView === 'logs' && <PlaceholderView name="Activity Log" description="Real-time application logs and AI reasoning trail." />}
-          {activeView === 'settings' && <PlaceholderView name="Settings" description="General, Appearance, AI Keys, Email, Notifications, Display, Data & Storage." />}
+          {activeView === 'settings' && <SettingsPanel />}
         </main>
       </div>
     </div>

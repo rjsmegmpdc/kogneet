@@ -3,64 +3,76 @@ import type { Settings } from '../../main/types'
 
 interface SettingsState {
   settings: Settings | null
-  loaded: boolean
+  loading: boolean
   error: string | null
   loadSettings: () => Promise<void>
-  updateSetting: <K extends keyof Settings>(section: K, values: Partial<Settings[K]>) => Promise<void>
+  updateSetting: (path: string, value: unknown) => Promise<void>
   resetSettings: () => Promise<void>
+}
+
+function deepSet(obj: Record<string, unknown>, path: string, value: unknown): Record<string, unknown> {
+  const result = structuredClone(obj)
+  const keys = path.split('.')
+  let current: Record<string, unknown> = result
+  for (let i = 0; i < keys.length - 1; i++) {
+    current = current[keys[i]] as Record<string, unknown>
+  }
+  current[keys[keys.length - 1]] = value
+  return result
 }
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
   settings: null,
-  loaded: false,
+  loading: true,
   error: null,
 
   loadSettings: async () => {
+    set({ loading: true, error: null })
     try {
       const settings = (await window.electronAPI.getSettings()) as Settings | null
-      if (settings) {
-        set({ settings, loaded: true, error: null })
-        applyTheme(settings)
-      }
+      set({ settings, loading: false })
+      if (settings) applyTheme(settings)
     } catch (err) {
-      set({ error: String(err) })
+      set({ error: String(err), loading: false })
     }
   },
 
-  updateSetting: async (section, values) => {
+  updateSetting: async (path: string, value: unknown) => {
     const { settings } = get()
     if (!settings) return
 
-    const updated = {
-      ...settings,
-      [section]: { ...settings[section], ...values }
-    }
-
+    const updated = deepSet(settings as unknown as Record<string, unknown>, path, value) as unknown as Settings
     set({ settings: updated })
-    await window.electronAPI.saveSettings(updated)
     applyTheme(updated)
+
+    const result = (await window.electronAPI.saveSettings(updated)) as { error?: string }
+    if (result?.error) {
+      set({ settings, error: result.error })
+    }
   },
 
   resetSettings: async () => {
     const fresh = (await window.electronAPI.resetSettings()) as Settings
-    set({ settings: fresh })
-    applyTheme(fresh)
+    if (fresh) {
+      set({ settings: fresh })
+      applyTheme(fresh)
+    }
   }
 }))
 
 function applyTheme(settings: Settings): void {
   const html = document.documentElement
 
-  // Dark mode
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-  const isDark =
-    settings.appearance.theme === 'dark' ||
-    (settings.appearance.theme === 'system' && prefersDark)
-  html.classList.toggle('dark', isDark)
+  const theme = settings.appearance.theme
+  if (theme === 'dark') {
+    html.classList.add('dark')
+  } else if (theme === 'light') {
+    html.classList.remove('dark')
+  } else {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    html.classList.toggle('dark', prefersDark)
+  }
 
-  // Accent colour
   html.setAttribute('data-accent', settings.appearance.accentColour)
-
-  // Font size
   html.setAttribute('data-fontsize', settings.appearance.fontSize)
 }
