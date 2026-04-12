@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+/* Dark mode via .dark class on <html>, not media query */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Accent colours — switched via data-accent attribute on html */
+  --color-accent-500: var(--accent-500);
+  --color-accent-600: var(--accent-600);
+  --color-accent-400: var(--accent-400);
+}
+
+:root {
+  /* Default accent: purple */
+  --accent-500: #8b5cf6;
+  --accent-600: #7c3aed;
+  --accent-400: #a78bfa;
+}
+
+[data-accent="teal"] {
+  --accent-500: #14b8a6;
+  --accent-600: #0d9488;
+  --accent-400: #2dd4bf;
+}
+
+[data-accent="blue"] {
+  --accent-500: #3b82f6;
+  --accent-600: #2563eb;
+  --accent-400: #60a5fa;
+}
+
+/* Font size tiers */
+html[data-fontsize="small"] { font-size: 14px; }
+html[data-fontsize="medium"] { font-size: 16px; }
+html[data-fontsize="large"] { font-size: 18px; }
+
+/* Smooth transitions for theme/accent changes */
+* {
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #a0aec0;
+  border-radius: 4px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #4a5568;
+}
