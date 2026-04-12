@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+.pnp.*
+.yarn/
+
+# Build output
+out/
+dist/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Electron
+release/
+
+# SQLite
+*.db
+*.db-journal
+*.db-wal
+
+# Logs
+*.log
+
+# Coverage
+coverage/
+
+# Credentials (never commit)
+credentials.json
+appconfig.json
