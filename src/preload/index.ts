@@ -31,6 +31,22 @@ const electronAPI = {
   setLoginItem: (enabled: boolean): Promise<unknown> =>
     ipcRenderer.invoke('app:setLoginItem', enabled),
 
+  // BYOK Key Management
+  byokGetProviders: (): Promise<unknown> => ipcRenderer.invoke('byok:getProviders'),
+  byokGetConfigured: (): Promise<unknown> => ipcRenderer.invoke('byok:getConfigured'),
+  byokGetRouting: (): Promise<unknown> => ipcRenderer.invoke('byok:getRouting'),
+  byokSaveProvider: (data: {
+    providerId: string; key: string; baseUrl?: string; defaultModel?: string
+  }): Promise<unknown> => ipcRenderer.invoke('byok:saveProvider', data),
+  byokRemoveProvider: (providerId: string): Promise<unknown> =>
+    ipcRenderer.invoke('byok:removeProvider', providerId),
+  byokTestProvider: (data: {
+    providerId: string; key: string; baseUrl?: string
+  }): Promise<unknown> => ipcRenderer.invoke('byok:testProvider', data),
+  byokSaveRouting: (routing: Record<string, string>): Promise<unknown> =>
+    ipcRenderer.invoke('byok:saveRouting', routing),
+  byokGetUsage: (days?: number): Promise<unknown> => ipcRenderer.invoke('byok:getUsage', days),
+
   // Logs
   tailLogs: (lines?: number): Promise<string> => ipcRenderer.invoke('logs:tail', lines)
 }

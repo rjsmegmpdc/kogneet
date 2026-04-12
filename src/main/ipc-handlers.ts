@@ -7,6 +7,15 @@ import { loadSettings, saveSettings, resetSettings } from './storage/settings'
 import { initDatabase } from './database'
 import { log } from './utils/logger'
 import { getSkillsDir } from './utils/paths'
+import {
+  PROVIDERS,
+  getByokConfig,
+  getConfiguredProviders,
+  saveProviderKey,
+  removeProviderKey,
+  saveFeatureRouting
+} from './services/key-manager'
+import { testProvider, getTokenUsageSummary } from './services/ai-provider'
 
 interface HandlerDeps {
   getAppConfig: () => AppConfig | null
@@ -100,6 +109,62 @@ export function registerIpcHandlers(deps: HandlerDeps): void {
   ipcMain.handle('app:setLoginItem', (_e, enabled: boolean) => {
     app.setLoginItemSettings({ openAtLogin: enabled })
     return { success: true }
+  })
+
+  // ── BYOK Key Management ─────────────────────────────────────────
+  ipcMain.handle('byok:getProviders', () => PROVIDERS)
+
+  ipcMain.handle('byok:getConfigured', () => {
+    const config = deps.getAppConfig()
+    if (!config) return []
+    return getConfiguredProviders(config)
+  })
+
+  ipcMain.handle('byok:getRouting', () => {
+    const config = deps.getAppConfig()
+    if (!config) return {}
+    return getByokConfig(config).featureRouting
+  })
+
+  ipcMain.handle('byok:saveProvider', async (_e, data: {
+    providerId: string
+    key: string
+    baseUrl?: string
+    defaultModel?: string
+  }) => {
+    const config = deps.getAppConfig()
+    if (!config) return { success: false, error: 'No config' }
+    const updated = await saveProviderKey(config, data.providerId, data.key, data.baseUrl, data.defaultModel)
+    deps.setAppConfig(updated)
+    return { success: true }
+  })
+
+  ipcMain.handle('byok:removeProvider', async (_e, providerId: string) => {
+    const config = deps.getAppConfig()
+    if (!config) return { success: false, error: 'No config' }
+    const updated = await removeProviderKey(config, providerId)
+    deps.setAppConfig(updated)
+    return { success: true }
+  })
+
+  ipcMain.handle('byok:testProvider', async (_e, data: {
+    providerId: string
+    key: string
+    baseUrl?: string
+  }) => {
+    return testProvider(data.providerId, data.key, data.baseUrl)
+  })
+
+  ipcMain.handle('byok:saveRouting', async (_e, routing: Record<string, string>) => {
+    const config = deps.getAppConfig()
+    if (!config) return { success: false, error: 'No config' }
+    const updated = await saveFeatureRouting(config, routing)
+    deps.setAppConfig(updated)
+    return { success: true }
+  })
+
+  ipcMain.handle('byok:getUsage', (_e, days?: number) => {
+    return getTokenUsageSummary(days ?? 30)
   })
 
   // ── Logs ───────────────────────────────────────────────────────
