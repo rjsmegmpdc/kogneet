@@ -53,3 +53,14 @@ Early development. Evolving from [RSS Intelligence v1](https://github.com/rjsmeg
 ## License
 
 Proprietary. All rights reserved.
+
+## Current Position
+
+Snapshot: 2026-05-21
+
+- Branch: `main`, **19 dirty files**
+- Last commit: 2026-04-12 — *Phase 4: Settings panel with 7 tabs including AI Keys*
+- Modified: `src/main/index.ts`, `ipc-handlers.ts`, `preload/index.ts`, `renderer/App.tsx`
+- Untracked services: `email-scheduler.ts`, `email-sender.ts`, `feed-fetcher.ts`, `reasoning-logger.ts`, `scheduler.ts`, `skill-editor.ts`, `skill-manager.ts`, `skill-processor.ts`
+- State: Phase 5+ in flight — agentic pipeline services not yet committed
+- Next: checkpoint commit so the v0.4 baseline stops drifting from reality
