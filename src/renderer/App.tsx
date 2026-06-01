@@ -5,6 +5,8 @@ import { Sidebar } from './components/layout/Sidebar'
 import { AppHeader } from './components/layout/AppHeader'
 import { FirstLaunchWizard } from './components/wizard/FirstLaunchWizard'
 import { SettingsPanel } from './components/settings/SettingsPanel'
+import { SkillEditor } from './components/skills/SkillEditor'
+import { FeedList } from './components/feeds/FeedList'
 
 export function App(): JSX.Element {
   const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | null>(null)
@@ -50,8 +52,8 @@ export function App(): JSX.Element {
         <AppHeader />
         <main className="flex-1 overflow-auto p-6">
           {activeView === 'digest' && <PlaceholderView name="Digest" description="Article cards with AI-powered triage, filtering, and saved configurations." />}
-          {activeView === 'skills' && <PlaceholderView name="SKILL.md Editor" description="Natural language feed configuration with live article preview and version history." />}
-          {activeView === 'feeds' && <PlaceholderView name="Feeds" description="Manage RSS feeds, newsletters, podcasts, and MCP sources." />}
+          {activeView === 'skills' && <SkillEditor />}
+          {activeView === 'feeds' && <FeedList />}
           {activeView === 'social' && <PlaceholderView name="Social Publishing" description="AI-powered social post generation with approval queue and analytics." />}
           {activeView === 'subscribers' && <PlaceholderView name="Subscribers" description="Manage email subscribers with per-feed personalisation." />}
           {activeView === 'logs' && <PlaceholderView name="Activity Log" description="Real-time application logs and AI reasoning trail." />}

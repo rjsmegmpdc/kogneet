@@ -5,6 +5,11 @@ import { loadAppConfig, saveAppConfig } from './storage/appconfig'
 import { loadSettings } from './storage/settings'
 import { registerIpcHandlers } from './ipc-handlers'
 import { log } from './utils/logger'
+import { loadFeeds } from './storage/feeds'
+import { setFetchCallback, startAll, stopAll } from './services/scheduler'
+import { fetchFeed } from './services/feed-fetcher'
+import { updateLastFetched } from './storage/feeds'
+import { setEmailSchedulerDeps, scheduleDigestEmail, stopDigestEmail } from './services/email-scheduler'
 import type { AppConfig, Settings } from './types'
 
 let mainWindow: BrowserWindow | null = null
@@ -119,17 +124,43 @@ async function bootstrap(): Promise<void> {
 }
 
 async function startServices(): Promise<void> {
-  // Services will be added as phases are implemented:
-  // - Feed scheduler (Phase 12)
-  // - Email scheduler (Phase 16)
-  // - IMAP polling (Phase 20)
-  // - Cowork file watcher (Phase 15)
-  await log('INFO', 'Services started')
+  if (!appConfig || !settings) return
+
+  const dataFolder = appConfig.dataFolder
+
+  // Set up feed scheduler callback
+  setFetchCallback(async (feed) => {
+    try {
+      await fetchFeed(feed, dataFolder, settings!)
+      updateLastFetched(feed.id)
+    } catch {
+      // Error already logged inside fetchFeed
+    }
+  })
+
+  // Start all enabled feed schedules
+  const feeds = loadFeeds()
+  startAll(feeds)
+
+  // Set up email scheduler
+  setEmailSchedulerDeps({
+    getSmtp: () => appConfig?.smtp,
+    getSettings: () => settings,
+    getDataFolder: () => appConfig?.dataFolder ?? null
+  })
+
+  if (settings) {
+    scheduleDigestEmail(settings)
+  }
+
+  await log('INFO', `Services started — ${feeds.filter((f) => f.enabled).length} feeds scheduled`)
 }
 
 app.whenReady().then(bootstrap)
 
 app.on('before-quit', () => {
+  stopAll()
+  stopDigestEmail()
   closeDatabase()
 })
 
